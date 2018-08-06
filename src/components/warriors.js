@@ -1,37 +1,11 @@
 import {connect} from 'react-redux';
 import React, {Component} from 'react';
 
+//Timer Component:
+import Timer from './timer';
+
 //Action Creators:
-let nextWarriorId = 0;
-const addWarrior = name => {
-  return {
-    type: 'ADD_WARRIOR',
-    id: nextWarriorId ++,
-    name
-  };
-}
-
-const removeWarrior = id => {
-  return {
-    type: 'REMOVE_WARRIOR',
-    id
-  };
-}
-
-const toggleConscious = id => {
-  return {
-    type: 'TOGGLE_CONSCIOUS',
-    id
-  };
-}
-
-const setWarriorVisibility = status => {
-  return {
-    type: 'SET_VISIBILITY',
-    group: 'warriors',
-    filter: status
-  };
-}
+import warriorActions from './../actions/warrior-actions';
 
 //Utilities:
 const showVisibleWarriors = (warriors, filter) => {
@@ -55,7 +29,7 @@ let AddWarrior = ({ dispatch }) => {
           if (name.value.length === 0) {
             return;
           }
-          dispatch(addWarrior(name.value));
+          dispatch(warriorActions.addWarrior(name.value));
           name.value = '';
       }}>
       Add a Warrior
@@ -69,28 +43,65 @@ AddWarrior = connect()(AddWarrior);
 const WarriorList = ({
   warriors,
   onClickStatus,
-  onClickName
+  onClickName,
+  onSubmit
 }) => {
-  return(
-    warriors.map((warrior) =>
-      <div key={warrior.id}>
-        <h3
-          style={{cursor: 'no-drop'}}
-          onClick={() => onClickName(warrior.id)}
-          >
-          {warrior.name}
-        </h3>
-        <ul>
-          <li>{`Health: ${warrior.health}`}</li>
-          <li
-            style={{cursor: 'alias'}}
-            onClick={() => onClickStatus(warrior.id)}
+  //To use ref successfully with each listed warrior's input,
+  //I had to move the undefined variable opponent WITHIN the mapping function block.
+  return (
+    warriors.map((warrior) => {
+      let opponent;
+      return (
+        <div key={warrior.id}>
+          <h3
+            style={{cursor: 'no-drop'}}
+            onClick={() => onClickName(warrior.id)}
             >
-            {`Status: ${warrior.conscious ? 'Conscious' : 'Unconscious'}`}
-          </li>
-        </ul>
-      </div>
-    )
+            {warrior.name}
+          </h3>
+          <ul>
+            <li>{`Health: ${warrior.health}`}</li>
+            <li>{`Armor: ${warrior.armor}`}</li>
+            <li
+              style={{cursor: 'alias'}}
+              onClick={() => {
+                if (!warrior.conscious) {
+                  alert(`If only it were that easy...`);
+                  return;
+                }
+                onClickStatus(warrior.id);
+                alert(`Nice going. ${warrior.name} is now unconscious.`);
+              }}
+              >
+              {`Status: ${warrior.conscious ? 'Conscious' : 'Unconscious'}`}
+            </li>
+          </ul>
+          <div>
+            {warrior.conscious ? (
+              <div>
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (opponent.value.length === 0) {
+                      return;
+                    }
+                    onSubmit(warrior.name, opponent.value);
+                    opponent.value = '';
+                  }}>
+                  <input ref={node => opponent = node}
+                         type="text"
+                         placeholder={'Enter dragon to attack!'}
+                    />
+                </form>
+              <br />
+              </div>
+              ) : (
+              <Timer id={warrior.id}/>
+              )
+            }
+          </div>
+        </div>
+      );
+    })
   );
 }
 
@@ -106,10 +117,13 @@ const mapStateToListProps = state => {
 const mapDispatchToListProps = dispatch => {
   return {
     onClickStatus: (id) => {
-      dispatch(toggleConscious(id))
+      dispatch(warriorActions.toggleConscious(id))
     },
     onClickName: (id) => {
-      dispatch(removeWarrior(id))
+      dispatch(warriorActions.removeWarrior(id))
+    },
+    onSubmit: (warriorName, dragonName) => {
+      dispatch(warriorActions.attackDragonAsync(warriorName, dragonName))
     }
   };
 }
@@ -153,7 +167,7 @@ const mapStateToLinkProps = (state, ownProps) => {
 const mapDispatchToLinkProps = dispatch => {
   return {
     onClickLink: (status) => {
-      dispatch(setWarriorVisibility(status))
+      dispatch(warriorActions.setWarriorVisibility(status))
     }
   };
 }

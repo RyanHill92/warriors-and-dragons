@@ -2,36 +2,7 @@ import {connect} from 'react-redux';
 import React, {Component} from 'react';
 
 //Action Creators:
-let nextDragonId = 0;
-const addDragon = name => {
-  return {
-    type: 'ADD_DRAGON',
-    name,
-    id: nextDragonId++
-  };
-}
-
-const removeDragon = id => {
-  return {
-    type: 'REMOVE_DRAGON',
-    id
-  };
-}
-
-const toggleCapture = id => {
-  return {
-    type: 'TOGGLE_CAPTURE',
-    id
-  };
-}
-
-const setDragonVisibility = status => {
-  return {
-    type: 'SET_VISIBILITY',
-    group: 'dragons',
-    filter: status
-  };
-}
+import dragonActions from './../actions/dragon-actions';
 
 //Utility Functions:
 const showVisibleDragons = (dragons, filter) => {
@@ -59,7 +30,7 @@ let AddDragon = ({dispatch}) => {
           if (name.value.length === 0) {
             return;
           }
-          dispatch(addDragon(name.value));
+          dispatch(dragonActions.addDragon(name.value));
           name.value = '';
         }}
         >
@@ -78,28 +49,48 @@ AddDragon = connect()(AddDragon);
 const DragonList = ({
   dragons,
   onClickStatus,
-  onClickName
+  onClickName,
+  onSubmit
 }) => {
   return (
-    dragons.map((dragon) =>
-      <div key={dragon.id}>
-        <h3
-          style={{cursor: 'no-drop'}}
-          onClick={() => onClickName(dragon.id)}
-          >
-          {dragon.name}
-        </h3>
-        <ul>
-          <li>{`Health: ${dragon.health}`}</li>
-          <li
-            style={{cursor: 'alias'}}
-            onClick={() => onClickStatus(dragon.id)}
+    dragons.map((dragon) => {
+      let opponent;
+      return (
+        <div key={dragon.id}>
+          <h3
+            style={{cursor: 'no-drop'}}
+            onClick={() => onClickName(dragon.id)}
             >
-            {`Status: ${dragon.wild ? 'Wild' : 'Captured'}`}
-          </li>
-        </ul>
-      </div>
-    )
+            {dragon.name}
+          </h3>
+          <br />
+          <ul>
+            <li>{`Health: ${dragon.health}`}</li>
+            <li
+              style={{cursor: 'alias'}}
+              onClick={() => onClickStatus(dragon.id)}
+              >
+              {`Status: ${dragon.wild ? 'Wild' : 'Captured'}`}
+            </li>
+          </ul>
+          <div>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                if (opponent.value.length === 0) {
+                  return;
+                }
+                onSubmit(dragon.name, opponent.value);
+                opponent.value = '';
+              }}>
+              <input ref={node => opponent = node}
+                     placeholder={'Enter warrior to attack!'}
+                />
+            </form>
+          </div>
+          <br />
+        </div>
+      );
+    })
   );
 }
 
@@ -117,10 +108,13 @@ const mapStateToDragonListProps = state => {
 const mapDispatchToDragonListProps = dispatch => {
   return {
     onClickName: (id) => {
-      dispatch(removeDragon(id));
+      dispatch(dragonActions.removeDragon(id));
     },
     onClickStatus: (id) => {
-      dispatch(toggleCapture(id));
+      dispatch(dragonActions.toggleCaptureAsync(id));
+    },
+    onSubmit: (dragonName, warriorName) => {
+      dispatch(dragonActions.attackWarriorAsync(dragonName, warriorName));
     }
   };
 };
@@ -194,7 +188,7 @@ const mapStateToDragonLinkProps = (state, ownProps) => {
 const mapDispatchToDragonLinkProps = dispatch => {
   return {
     onClickLink: (status) => {
-      dispatch(setDragonVisibility(status));
+      dispatch(dragonActions.setDragonVisibility(status));
     }
   };
 };
