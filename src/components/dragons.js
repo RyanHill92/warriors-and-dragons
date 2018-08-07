@@ -4,7 +4,7 @@ import React, {Component} from 'react';
 //Action Creators:
 import dragonActions from './../actions/dragon-actions';
 
-//Utility Functions:
+//Utility function to return only dragons of selected status:
 const showVisibleDragons = (dragons, filter) => {
   switch(filter) {
     case 'WILD':
@@ -41,8 +41,11 @@ let AddDragon = ({dispatch}) => {
 }
 //Called without args (null, null), the connect method
 //passes the dispatch method to the wrapped component.
+//Allows AddDragon to dispatch ADD_DRAGON.
 AddDragon = connect()(AddDragon);
 
+//Presentation of dragon name.
+//Passed event handler from DragonList.
 const DragonHeader = ({
   dragon,
   onClickName
@@ -57,6 +60,10 @@ const DragonHeader = ({
   );
 }
 
+//Presentation of dragon statistics.
+//Passed event handler from DragonList.
+//If dragon is dead, a "dead card" is rendered instead.
+//Sizing of card specified below.
 const DragonStats = ({
   dragon,
   onClickStatus
@@ -88,6 +95,11 @@ const DragonStats = ({
   );
 }
 
+//Presentation of dragon's attack input field.
+//Passed event handler from DragonList.
+//If dragon is dead, not rendered.
+//Notice the undefined opponent variable to make ref function below possible.
+//Blocks user from attacking before typing at least one character.
 const DragonFooter = ({
   dragon,
   onSubmit
@@ -115,9 +127,9 @@ const DragonFooter = ({
 }
 
 
-//Purely presentational--controls how list of warriors is rendered.
-//"Doesn't know" why it displays certain warriors and not others.
-//"Dumb" in that it simply follows parent's directions.
+//Wrapped with store-connected component VisibleDragonList.
+//Passed state and dispatches as props which it passes on to children.
+//Size of overall character card specified below.
 const DragonList = ({
   dragons,
   onClickStatus,
@@ -157,7 +169,8 @@ const mapStateToDragonListProps = state => {
     )
   };
 };
-//These dispatcher methods take action creator calls as args.
+
+//Three action creators, two async thunks, passed as args to dispatch callbacks.
 const mapDispatchToDragonListProps = dispatch => {
   return {
     onClickName: (id) => {
@@ -172,8 +185,8 @@ const mapDispatchToDragonListProps = dispatch => {
   };
 };
 
-//Another store-linked container generated with connect.
-//The "brains" behind DragonList's dumb rendering.
+//Store-container generated with connect().
+//The "brains" behind DragonList's rendering.
 const VisibleDragonList = connect(
   mapStateToDragonListProps,
   mapDispatchToDragonListProps
@@ -205,6 +218,7 @@ const DragonLinks = () => {
 //"Doesn't know" why the active link is a span.
 //Simply inherits active from smart parent and follows directions.
 //Status comes from the prop that DragonLinks passed to DragonFilterLink.
+//Handler passed from store-linked container.
 const DragonLink = ({
   status,
   active,
@@ -230,7 +244,8 @@ const DragonLink = ({
   }
 }
 
-//One prop simply a recycled ownProp; the other from store.
+//One prop simply a recycled ownProp--DragonFilterLink receives status from DragonLinks.
+//The other prop from store--active.
 //All DragonLink needs to know to do its job.
 const mapStateToDragonLinkProps = (state, ownProps) => {
   return {
@@ -238,6 +253,7 @@ const mapStateToDragonLinkProps = (state, ownProps) => {
     active: state.visibility.dragons === ownProps.status
   };
 };
+//Action dispatcher passed as handler to DragonLink.
 const mapDispatchToDragonLinkProps = dispatch => {
   return {
     onClickLink: (status) => {
@@ -252,7 +268,7 @@ const DragonFilterLink = connect(
   mapDispatchToDragonLinkProps
 )(DragonLink);
 
-//The fruit of the above labors.
+
 //A simple presentational component to wrap all the smart ones above.
 const Dragons = () => {
   return (

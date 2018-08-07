@@ -1,16 +1,6 @@
-const visibilitySubReducer = (state, action) => {
-  switch(action.type) {
-    case 'SET_VISIBILITY':
-      if (Object.keys(state)[0] !== action.group) {
-        return state;
-      }
-      return {}
-    default:
-      return state;
-  }
-}
 
-//Receives object.
+//Receives object with two props, warriors and dragons, each with current filter as value.
+//One or the other prop sent in action payload so that value of correct prop is set.
 const visibilityReducer = (state, action) => {
   switch(action.type) {
     case 'SET_VISIBILITY':

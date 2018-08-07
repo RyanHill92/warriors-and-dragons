@@ -9,6 +9,10 @@ import Warriors from './components/warriors';
 
 import {store} from './store/store';
 
+//Top level container.
+//Determines columnar pattern for whole page.
+//Contains styling code for welcome banner + instructions.
+//Empty card body at bottom to keep some whitespace between last row of text and bottom of viewport.
 const Profiles = () => {
   return (
     <div className="container">
@@ -34,7 +38,7 @@ const Profiles = () => {
         </div>
       </div>
       <div className="row">
-        <div className="card-body col">
+        <div className="card-body">
         </div>
       </div>
     </div>

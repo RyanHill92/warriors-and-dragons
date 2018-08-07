@@ -1,4 +1,4 @@
-//Utility function for ADD_DRAGON action.
+//Utility function for ADD_DRAGON action to set random species.
 const getSpecies = () => {
   const speciesList = [
     'Red Darter',
@@ -18,10 +18,11 @@ const getSpecies = () => {
 const dragonSubReducer = (state, action) => {
   switch(action.type) {
     case 'ATTACK_DRAGON':
+      //Don't want to attack the wrong dragon!
       if (state.id !== action.id) {
         return state;
       }
-
+      //Don't want to render a negative number for health! Dead is dead.
       if (state.health - action.value <= 0) {
         return {...state, health: 0};
       }
@@ -33,7 +34,11 @@ const dragonSubReducer = (state, action) => {
       }
       return {...state, wild: !state.wild};
     case 'ADD_DRAGON':
+      //Create variable to hold return value so species is set for good.
+      //Otherwise, new species for each re-render (if prop value IS the method call).
       let species = getSpecies();
+      //Living until proven dead.
+      //ID created and passed by AddDragon component.
       return {
         name: action.name,
         health: 500,
@@ -44,6 +49,7 @@ const dragonSubReducer = (state, action) => {
       };
     case 'REMOVE_DRAGON':
       return state.id !== action.id;
+    //Triggers rendering of dead card.
     case 'KILL_DRAGON':
       if (state.id !== action.id) {
         return state;
@@ -69,9 +75,12 @@ const dragonReducer = (state, action) => {
       let repeat = state.filter((dragon) => {
         return dragon.name === action.name;
       })
+      //Check for duplicate name and if so, no addition.
       if (repeat.length > 0) {
         return state;
       }
+      //No need to pass state on to subReducer.
+      //We just want a single object returned, not an array.
       return [...state, dragonSubReducer(null, action)];
     case 'REMOVE_DRAGON':
       return state.filter((dragon) =>

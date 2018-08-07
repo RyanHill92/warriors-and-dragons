@@ -1,3 +1,4 @@
+//Five possible attack types each for warriors and dragons.
 const attacks = {
   warriorWeapons: {
     spear: {
@@ -45,6 +46,7 @@ const attacks = {
   },
 };
 
+//MockAPI = class with two static methods, each returning an attack after 1s. 
 class AttackApi {
   static warriorAttack () {
     let randomNum = Math.floor(Math.random()*4.9);

@@ -1,3 +1,4 @@
+//Used earlier on for testing. See below.
 import expect from 'expect';
 import {createStore, applyMiddleware} from 'redux';
 import thunk from 'redux-thunk';
@@ -5,7 +6,7 @@ import dragonReducer from './../reducers/dragon-reducer';
 import warriorReducer from './../reducers/warrior-reducer';
 import visibilityReducer from './../reducers/visibility-reducer';
 
-
+//Empty store when app first started up.
 const initialState = {
   warriors: [],
   dragons: [],
@@ -15,6 +16,7 @@ const initialState = {
   }
 };
 
+//Top-level reducer passed to createStore.
 const reducer = (state = initialState, action) => {
   return {
     warriors: warriorReducer(state.warriors, action),
@@ -23,6 +25,7 @@ const reducer = (state = initialState, action) => {
   };
 }
 
+//Second arg makes it possible to use thunks as action creators. 
 const store = createStore(
   reducer,
   applyMiddleware(thunk)

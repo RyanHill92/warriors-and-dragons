@@ -10,6 +10,7 @@ const addDragon = name => {
   };
 }
 
+//Handler passed to onClickName in Dragon Header.
 const removeDragon = id => {
   return {
     type: 'REMOVE_DRAGON',
@@ -17,6 +18,8 @@ const removeDragon = id => {
   };
 }
 
+//Consequence of trying to capture a dragon with too much health.
+//Loops through all warriors, calling attackWarrior on individuals.
 const attackAllWarriors = (value) => {
   return function (dispatch, getState) {
     const {warriors} = getState();
@@ -34,6 +37,7 @@ const attackWarrior = (id, value) => {
   }
 }
 
+//Toggles warrior's dead property to true, so UI renders dead card.
 const killWarrior = id => {
   return {
     type: 'KILL_WARRIOR',
@@ -41,6 +45,8 @@ const killWarrior = id => {
   };
 }
 
+//System of "smart" alerts to assess warrior condition based on armor,
+//health, exposed, and conscious.
 const getWarriorStatus = attackedWarrior => {
   return function (dispatch) {
     //Alert if warrior was slain.
@@ -60,6 +66,7 @@ const getWarriorStatus = attackedWarrior => {
         dispatch(warriorActions.toggleConscious(attackedWarrior.id));
         alert(`${attackedWarrior.name} has been knocked out!`);
         return;
+      //If warrior is unconscious and would otherwise die from attack damage, alert of no effect.
     } else if (attackedWarrior.spared
       && !attackedWarrior.conscious
       && attackedWarrior.exposed) {
@@ -76,24 +83,25 @@ const toggleCapture = id => {
   };
 }
 
+//One of three possibilities:
 const toggleCaptureAsync = id => {
   return function (dispatch, getState) {
     const {dragons} = getState();
     let dragonToCapture = dragons.filter((dragon) => {
       return dragon.id === id;
     })[0];
-    //Clicked dragon only captured if still wild and below 100 health.
+    //(1)Clicked dragon captured because still wild and below 100 health.
     if (dragonToCapture.health < 100 && dragonToCapture.wild === true) {
       dispatch(toggleCapture(id));
       alert(`${dragonToCapture.name} was captured!`);
       return;
-      //Clicked dragon set free if currently captured.
+      //(2) Clicked dragon set free because currently captured.
     } else if (dragonToCapture.wild === false) {
       dispatch(toggleCapture(id));
       alert(`${dragonToCapture.name} was set free!`);
       return;
     }
-    //If clicked dragon above 100 and wild, warriors all attacked.
+    //(3)Clicked dragon above 100 and wild, so warriors all attacked.
     return AttackApi.dragonAttack().then((tactic) => {
       let damageMultiplier = Math.random() * 5;
       let totalDamage = Math.floor(damageMultiplier * tactic.strength);
@@ -102,7 +110,7 @@ const toggleCaptureAsync = id => {
       //Return list of warriors for status check in next then block.
       return getState().warriors;
     }).then((warriors) => {
-      //Run status check on each warrior in store.
+      //Run status check on each warrior in store after attacks above.
       for (let warrior of warriors) {
         dispatch(getWarriorStatus(warrior));
       }
@@ -113,15 +121,19 @@ const toggleCaptureAsync = id => {
   }
 }
 
+//Dispatches attackWarrior under certain conditions.
+//Calls mockAPI for random attack type.
+//Passed as onSubmit handler to input field in DragonFooter.
 const attackWarriorAsync = (dragonName, warriorName) => {
   return function (dispatch, getState) {
     //Use getState arg to look for a name match in the store.
     const warriors = getState().warriors;
+      //Safe to take zeroth index because duplicate names blocked in warriors reducer.
     let warriorToAttack = warriors.filter((warrior) => {
       return warrior.name.toLowerCase() === warriorName.toLowerCase();
     })[0];
-    //Block dispatch if entered name does not match an exisiting warrior.
-    if (!warriorToAttack.name) {
+    //No dispatch if entered name does not match an exisiting warrior.
+    if (warriorToAttack === undefined) {
       alert('That warrior does not exist!');
       return;
     }
@@ -132,7 +144,7 @@ const attackWarriorAsync = (dragonName, warriorName) => {
       return;
     }
 
-    //Mock API call.
+    //Mock API call for attack tactic (strength and text).
     return AttackApi.dragonAttack().then((tactic) => {
       //Use randomly returned tactic x random damage multiplier to calculate attack strength.
       let damageMultiplier = Math.random() * 5;
@@ -155,6 +167,7 @@ const attackWarriorAsync = (dragonName, warriorName) => {
   };
 }
 
+//onClick handler passed to FilterLinks.
 const setDragonVisibility = status => {
   return {
     type: 'SET_VISIBILITY',

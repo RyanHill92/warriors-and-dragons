@@ -7,11 +7,16 @@ import Timer from './timer';
 //Action Creators:
 import warriorActions from './../actions/warrior-actions';
 
-//Utilities:
+//Utility function to return only warriors of selected status.
+//The || operator is key: for the first second of unconsciousness,
+//the unconscious warrior's card will still be visible if the CONSCIOUS
+//filter is activated. This way, the timer will still start because
+//the Timer component will mount for one second before disappearing.
 const showVisibleWarriors = (warriors, filter) => {
   switch(filter) {
     case 'CONSCIOUS':
-      return warriors.filter((warrior) => warrior.conscious);
+      return warriors.filter((warrior) =>
+        warrior.conscious || warrior.timeToConscious === 10);
     case 'UNCONSCIOUS':
       return warriors.filter((warrior) => !warrior.conscious);
     default:
@@ -20,6 +25,8 @@ const showVisibleWarriors = (warriors, filter) => {
 }
 
 //Child Components:
+
+//Able to dispatch addWarrior because of connect call below.
 let AddWarrior = ({ dispatch }) => {
   let name;
   return (
@@ -37,8 +44,10 @@ let AddWarrior = ({ dispatch }) => {
     </div>
   );
 }
+//Still passed dispatch when both of connect's args are null.
 AddWarrior = connect()(AddWarrior);
 
+//Controls presentation of warrior name.
 const WarriorHeader = ({
   warrior,
   onClickName
@@ -53,6 +62,9 @@ const WarriorHeader = ({
   );
 }
 
+//Displays either warrior statistics or dead card if dead is true.
+//Sets size for dead card.
+//Blocks user from toggling consciousness of knocked out warrior.
 const WarriorStats = ({
   warrior,
   onClickStatus
@@ -91,6 +103,10 @@ const WarriorStats = ({
   );
 }
 
+//Renders either attack input field or time-to-consciousness ticker.
+//Does not render at all if warrior dead.
+//Notice the undefined opponent variable to make ref function below possible.
+//Blocks user from attacking without first entering at least one character.
 const WarriorFooter = ({
   warrior,
   onSubmit
@@ -118,21 +134,24 @@ const WarriorFooter = ({
           </form>
         </div>
         ) : (
-        <Timer id={warrior.id}/>
+        <Timer id={warrior.id}
+               time={warrior.timeToConscious}
+          />
         )
       }
     </div>
   );
 }
 
+//Passes props from its store-connected container, generated below by connect().
+//All three handlers passed on to children are action dispatchers.
+//Sets exact size of each character card.
 const WarriorList = ({
   warriors,
   onClickStatus,
   onClickName,
   onSubmit
 }) => {
-  //To use ref successfully with each listed warrior's input,
-  //I had to move the undefined variable opponent WITHIN the mapping function block.
   return (
     warriors.map((warrior) => {
       return (
@@ -154,6 +173,7 @@ const WarriorList = ({
   );
 }
 
+//Call of utility function above with two args from state.
 const mapStateToListProps = state => {
   return {
     warriors: showVisibleWarriors (
@@ -182,6 +202,9 @@ const VisibleWarriorList = connect(
   mapDispatchToListProps
 )(WarriorList);
 
+//Presentational only.
+//Knows to render a span instead of a link if passed active === true.
+//Passed handler which dispatches an action, but it doesn't know that.
 const WarriorLink = ({
   onClickLink,
   active,
@@ -206,6 +229,8 @@ const WarriorLink = ({
   }
 }
 
+//Status passed down to WarriorLink from WarriorLinks.
+//Active calculated straight from store.
 const mapStateToLinkProps = (state, ownProps) => {
   return {
     active: ownProps.status === state.visibility.warriors,
@@ -221,11 +246,14 @@ const mapDispatchToLinkProps = dispatch => {
   };
 }
 
+//Smart container wraps each individual link.
+//This component is the one rendered multiple times by WarriorLinks.
 const WarriorFilterLink = connect(
   mapStateToLinkProps,
   mapDispatchToLinkProps
 )(WarriorLink);
 
+//Renders one link for each status in array.
 const WarriorLinks = () => {
   const statuses = ['ALL', 'CONSCIOUS', 'UNCONSCIOUS'];
   return (
