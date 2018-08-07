@@ -35,7 +35,7 @@ class Timer extends Component {
   render () {
     const time = this.state.time;
     return (
-      <p><em>{`Knocked out! Recovery in ${time}s...`}</em></p>
+      <h6><em>{`Knocked out! Recovery in ${time}s...`}</em></h6>
     );
   }
 }

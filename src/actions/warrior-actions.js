@@ -39,6 +39,13 @@ const attackDragon = (id, value) => {
   };
 }
 
+const killDragon = id => {
+  return {
+    type: 'KILL_DRAGON',
+    id
+  }
+}
+
 const attackDragonAsync = (warriorName, dragonName) => {
   return function (dispatch, getState) {
     const dragons = getState().dragons;
@@ -79,6 +86,7 @@ const attackDragonAsync = (warriorName, dragonName) => {
       })[0];
       if (attackedDragon.health === 0) {
         alert(`${attackedDragon.name} has been slain!`);
+        dispatch(killDragon(attackedDragon.id));
       }
 
     }).catch((err) => {
@@ -92,7 +100,8 @@ const warriorActions = {
   removeWarrior,
   toggleConscious,
   setWarriorVisibility,
-  attackDragonAsync
+  attackDragonAsync,
+  killDragon
 };
 
 export default warriorActions;

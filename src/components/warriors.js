@@ -39,26 +39,36 @@ let AddWarrior = ({ dispatch }) => {
 }
 AddWarrior = connect()(AddWarrior);
 
-
-const WarriorList = ({
-  warriors,
-  onClickStatus,
-  onClickName,
-  onSubmit
+const WarriorHeader = ({
+  warrior,
+  onClickName
 }) => {
-  //To use ref successfully with each listed warrior's input,
-  //I had to move the undefined variable opponent WITHIN the mapping function block.
   return (
-    warriors.map((warrior) => {
-      let opponent;
-      return (
-        <div key={warrior.id}>
-          <h3
-            style={{cursor: 'no-drop'}}
-            onClick={() => onClickName(warrior.id)}
-            >
-            {warrior.name}
-          </h3>
+    <h3
+      style={{cursor: 'no-drop'}}
+      onClick={() => onClickName(warrior.id)}
+      >
+      {warrior.name}
+    </h3>
+  );
+}
+
+const WarriorStats = ({
+  warrior,
+  onClickStatus
+}) => {
+  return (
+    <div>
+      { warrior.dead ?
+        <div className="text-center">
+          <div className="card" style={{backgroundColor: '#DC143C', width: '60%'}}>
+            <div className="card-body">
+              <h1><i className="fas fa-skull"></i></h1>
+              <p><em>Click name to bury.</em></p>
+            </div>
+          </div>
+        </div>
+         :
           <ul>
             <li>{`Health: ${warrior.health}`}</li>
             <li>{`Armor: ${warrior.armor}`}</li>
@@ -76,29 +86,68 @@ const WarriorList = ({
               {`Status: ${warrior.conscious ? 'Conscious' : 'Unconscious'}`}
             </li>
           </ul>
-          <div>
-            {warrior.conscious ? (
-              <div>
-                <form onSubmit={(e) => {
-                    e.preventDefault();
-                    if (opponent.value.length === 0) {
-                      return;
-                    }
-                    onSubmit(warrior.name, opponent.value);
-                    opponent.value = '';
-                  }}>
-                  <input ref={node => opponent = node}
-                         type="text"
-                         placeholder={'Enter dragon to attack!'}
-                    />
-                </form>
-              <br />
-              </div>
-              ) : (
-              <Timer id={warrior.id}/>
-              )
-            }
-          </div>
+      }
+    </div>
+  );
+}
+
+const WarriorFooter = ({
+  warrior,
+  onSubmit
+}) => {
+  let opponent;
+  if (warrior.dead) {
+    return null;
+  }
+  return(
+    <div>
+      {warrior.conscious ? (
+        <div>
+          <form onSubmit={(e) => {
+              e.preventDefault();
+              if (opponent.value.length === 0) {
+                return;
+              }
+              onSubmit(warrior.name, opponent.value);
+              opponent.value = '';
+            }}>
+            <input ref={node => opponent = node}
+                   type="text"
+                   placeholder={'Enter dragon to attack!'}
+              />
+          </form>
+        </div>
+        ) : (
+        <Timer id={warrior.id}/>
+        )
+      }
+    </div>
+  );
+}
+
+const WarriorList = ({
+  warriors,
+  onClickStatus,
+  onClickName,
+  onSubmit
+}) => {
+  //To use ref successfully with each listed warrior's input,
+  //I had to move the undefined variable opponent WITHIN the mapping function block.
+  return (
+    warriors.map((warrior) => {
+      return (
+        <div key={warrior.id} className="card-body" style={{height: '200px'}}>
+          <WarriorHeader
+            warrior={warrior}
+            onClickName={id => onClickName(id)}/>
+          <WarriorStats
+            warrior={warrior}
+            onClickStatus={id => onClickStatus(id)}/>
+          <WarriorFooter
+            warrior={warrior}
+            onSubmit={(warriorName, dragonName) =>
+              onSubmit(warriorName, dragonName)}
+            />
         </div>
       );
     })

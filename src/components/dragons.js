@@ -43,6 +43,78 @@ let AddDragon = ({dispatch}) => {
 //passes the dispatch method to the wrapped component.
 AddDragon = connect()(AddDragon);
 
+const DragonHeader = ({
+  dragon,
+  onClickName
+}) => {
+  return (
+    <h3
+      style={{cursor: 'no-drop'}}
+      onClick={() => onClickName(dragon.id)}
+      >
+      {dragon.name}
+    </h3>
+  );
+}
+
+const DragonStats = ({
+  dragon,
+  onClickStatus
+}) => {
+  return (
+    <div>
+      {dragon.dead ?
+        <div className="text-center">
+          <div className="card" style={{backgroundColor: '#FF8C00', width: '60%'}}>
+            <div className="card-body">
+              <h1><i className="fab fa-gripfire"></i></h1>
+              <p><em>Click name to scatter.</em></p>
+            </div>
+          </div>
+        </div>
+        :
+        <ul>
+          <li>{`Health: ${dragon.health}`}</li>
+          <li>{`Species: ${dragon.species}`}</li>
+          <li
+            style={{cursor: 'alias'}}
+            onClick={() => onClickStatus(dragon.id)}
+            >
+            {`Status: ${dragon.wild ? 'Wild' : 'Captured'}`}
+          </li>
+        </ul>
+      }
+    </div>
+  );
+}
+
+const DragonFooter = ({
+  dragon,
+  onSubmit
+}) => {
+  let opponent;
+  if (dragon.dead) {
+    return null;
+  }
+  return (
+    <div>
+      <form onSubmit={(e) => {
+          e.preventDefault();
+          if (opponent.value.length === 0) {
+            return;
+          }
+          onSubmit(dragon.name, opponent.value);
+          opponent.value = '';
+        }}>
+        <input ref={node => opponent = node}
+               placeholder={'Enter warrior to attack!'}
+          />
+      </form>
+    </div>
+  );
+}
+
+
 //Purely presentational--controls how list of warriors is rendered.
 //"Doesn't know" why it displays certain warriors and not others.
 //"Dumb" in that it simply follows parent's directions.
@@ -54,40 +126,21 @@ const DragonList = ({
 }) => {
   return (
     dragons.map((dragon) => {
-      let opponent;
       return (
-        <div key={dragon.id}>
-          <h3
-            style={{cursor: 'no-drop'}}
-            onClick={() => onClickName(dragon.id)}
-            >
-            {dragon.name}
-          </h3>
-          <br />
-          <ul>
-            <li>{`Health: ${dragon.health}`}</li>
-            <li
-              style={{cursor: 'alias'}}
-              onClick={() => onClickStatus(dragon.id)}
-              >
-              {`Status: ${dragon.wild ? 'Wild' : 'Captured'}`}
-            </li>
-          </ul>
-          <div>
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                if (opponent.value.length === 0) {
-                  return;
-                }
-                onSubmit(dragon.name, opponent.value);
-                opponent.value = '';
-              }}>
-              <input ref={node => opponent = node}
-                     placeholder={'Enter warrior to attack!'}
-                />
-            </form>
-          </div>
-          <br />
+        <div key={dragon.id} className="card-body" style={{height: '200px'}}>
+          <DragonHeader
+            dragon={dragon}
+            onClickName={id => onClickName(id)}
+            />
+          <DragonStats
+            dragon={dragon}
+            onClickStatus={id => onClickStatus(id)}
+            />
+          <DragonFooter
+            dragon={dragon}
+            onSubmit={(dragonName, warriorName) =>
+              onSubmit(dragonName, warriorName)}
+            />
         </div>
       );
     })
@@ -130,7 +183,7 @@ const VisibleDragonList = connect(
 //Displays a link for each status in the array.
 //Passes that status to DragonFilterLink so that each link
 //dispatches the TOGGLE_CAPTURE action with a different payload.
-const DragonFooter = () => {
+const DragonLinks = () => {
   const statuses = ['ALL', 'WILD', 'CAPTURED'];
   return (
     <div>
@@ -208,7 +261,7 @@ const Dragons = () => {
       <br />
       <VisibleDragonList/>
       <br />
-      <DragonFooter/>
+      <DragonLinks/>
     </div>
   );
 }
