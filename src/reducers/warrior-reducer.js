@@ -44,6 +44,11 @@ const warriorSubReducer = (state, action) => {
       //If a warrior already had his armor destroyed, then all subsequent
       //damage will be deducted in full from warrior's health.
       return {...state, conscious: !state.conscious, timeToConscious: 10, exposed: true};
+    case 'TOGGLE_SPARED':
+      if (state.id !== action.id) {
+        return state;
+      }
+      return {...state, spared: !state.spared};
     case 'ADD_WARRIOR':
       return {
         name: action.name,
@@ -108,6 +113,9 @@ const warriorReducer = (state, action) => {
       return state.map((warrior) => {
         return warriorSubReducer(warrior, action);
       });
+    case 'TOGGLE_SPARED':
+      return state.map((warrior) =>
+        warriorSubReducer(warrior, action));
     case 'ADD_WARRIOR':
       let repeat = state.filter((warrior) => {
         return warrior.name === action.name;

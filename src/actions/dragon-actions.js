@@ -71,6 +71,7 @@ const getWarriorStatus = attackedWarrior => {
       && !attackedWarrior.conscious
       && attackedWarrior.exposed) {
         alert(`...but ${attackedWarrior.name} would prefer to wake up before he's slain.`);
+        dispatch(warriorActions.toggleSpared(attackedWarrior.id));
         return;
     }
   }

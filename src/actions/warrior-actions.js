@@ -26,6 +26,14 @@ const toggleConscious = id => {
   };
 }
 
+const toggleSpared = id => {
+  return {
+    type: 'TOGGLE_SPARED',
+    id
+  }
+}
+
+
 //The Timer component passes this action creator
 const decrementTime = id => {
   return {
@@ -131,7 +139,8 @@ const warriorActions = {
   attackDragonAsync,
   killDragon,
   decrementTime,
-  startTimer
+  startTimer,
+  toggleSpared
 };
 
 export default warriorActions;
